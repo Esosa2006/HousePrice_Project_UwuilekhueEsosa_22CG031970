@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Prediction System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-hint {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .predicted-price {
+            font-size: 2em;
+            font-weight: 700;
+            margin-top: 10px;
+            color: #667eea;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏡 House Price Predictor</h1>
+            <p>Predict house prices using machine learning</p>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: #333;">Enter House Details</h2>
+            
+            <form id="predictionForm">
+                <div class="form-group">
+                    <label for="overall_qual">Overall Quality (1-10)</label>
+                    <input type="number" id="overall_qual" name="overall_qual" 
+                           min="1" max="10" value="7" required>
+                    <div class="input-hint">Rate the overall material and finish quality</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="gr_liv_area">Above Ground Living Area (sq ft)</label>
+                    <input type="number" id="gr_liv_area" name="gr_liv_area" 
+                           min="0" step="1" value="1500" required>
+                    <div class="input-hint">Total square footage of living space</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="total_bsmt_sf">Total Basement Area (sq ft)</label>
+                    <input type="number" id="total_bsmt_sf" name="total_bsmt_sf" 
+                           min="0" step="1" value="1000" required>
+                    <div class="input-hint">Total square footage of basement area</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="garage_cars">Garage Size (cars)</label>
+                    <input type="number" id="garage_cars" name="garage_cars" 
+                           min="0" max="5" step="1" value="2" required>
+                    <div class="input-hint">Number of cars that fit in garage</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="year_built">Year Built</label>
+                    <input type="number" id="year_built" name="year_built" 
+                           min="1800" max="2026" value="2000" required>
+                    <div class="input-hint">Original construction year</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="neighborhood">Neighborhood</label>
+                    <select id="neighborhood" name="neighborhood" required>
+                        {% for neighborhood in neighborhoods %}
+                        <option value="{{ neighborhood }}">{{ neighborhood }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="input-hint">Physical location within Ames city limits</div>
+                </div>
+
+                <button type="submit" class="btn">Predict Price</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Calculating...</p>
+            </div>
+
+            <div class="result" id="result"></div>
+        </div>
+
+        {% if metrics %}
+        <div class="card">
+            <h3 style="margin-bottom: 15px; color: #333;">Model Performance</h3>
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-label">R² Score</div>
+                    <div class="metric-value">{{ "%.4f"|format(metrics.test_r2) }}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">MAE</div>
+                    <div class="metric-value">${{ "{:,.0f}".format(metrics.test_mae) }}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">RMSE</div>
+                    <div class="metric-value">${{ "{:,.0f}".format(metrics.test_rmse) }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Machine Learning House Price Prediction System</p>
+            <p>Powered by Random Forest Algorithm</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('predictionForm');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            
+            resultDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                loadingDiv.style.display = 'none';
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>Prediction Result</h3>
+                        <div class="predicted-price">${data.predicted_price}</div>
+                        <p style="margin-top: 10px;">This is the estimated market value based on the provided features.</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>Error</h3>
+                        <p>${data.error || 'Unknown error occurred'}</p>
+                    `;
+                }
+                
+                resultDiv.style.display = 'block';
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+            } catch (error) {
+                console.error('Prediction error:', error);
+                loadingDiv.style.display = 'none';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>Error</h3>
+                    <p>Failed to get prediction: ${error.message}</p>
+                `;
+                resultDiv.style.display = 'block';
+            }
+        }, false);
+    </script>
+</body>
+</html>
