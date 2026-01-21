@@ -2,5 +2,5 @@ NAME: UWUILEKHUE ESOSA
 MATRIC NUMBER: 22CG031970
 ML ALGORITHM USED: RANDOM FOREST
 MODEL PERSISTENCE METHOD USED: JOBLIB
-LIVE URL: https://houseprice-project-aningalikita.onrender.com/
+LIVE URL: https://houseprice-project-uwuilekhueesosa.onrender.com
 GITHUB REPOSITORY: https://github.com/Esosa2006/HousePrice_Project_UwuilekhueEsosa_22CG031970
